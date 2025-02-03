@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Parameterization Invariant Representations for Efficient Shape Learning</title>
+
+		<meta name="description" content="">
+		<meta name="author" content="Emmanuel Hartman">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="../../revealjs/dist/reset.css">
+		<link rel="stylesheet" href="../../revealjs/dist/reveal.css">
+		<link rel="stylesheet" href="../../revealjs/dist/theme/H2_Talk.css" id="theme">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="../../revealjs/plugin/highlight/monokai.css">
+		<style>
+    .reveal section p {
+    display: inline-block;
+    font-size: 0.6em;
+    line-height: 1.2em;
+    text-align: left;
+    vertical-align: top;
+		margin-bottom: .2em
+	  }
+
+		sub {
+    	font-size: 0.2em;
+		}
+		div.title {
+		  border-radius: 10px;
+		  width: 100%;
+		  border: 1px solid #000000;
+		  background-color: rgba(133, 167, 255, 0.8);
+		  padding: 2px 2px;
+		}
+
+		div.btitle {
+		  width: 100%;
+	    font-size: 0.6em;
+		  background-color: #99aaff;
+		  border-radius: 1px;
+		}
+		div.b {
+		  width: 100%;
+		  background-color: #cccccc;
+		  border-radius: 10px;
+		  padding: 0px 10px 10px 10px;
+		}
+		table, tbody, tr, th, td{
+		    background-color: rgba(0, 0, 0, 0.0) !important;
+		}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+			<div class="slides">
+				$\renewcommand{\Diff}{\mathcal{D}}\newcommand{\dist}{\mathrm{dist}}\renewcommand{\Imm}{\mathcal{I}}\newcommand{\Shape}{\mathcal{S}}\newcommand{\R}{\mathbb{R}}\newcommand{\vol}{\operatorname{vol}}\newcommand{\Vol}{\mathrm{Vol}}\newcommand{\Var}{V}$
+
+<section data-markdown>
+<textarea data-template>
+<h4> Parameterization Invariant Representations<br> for Efficient Shape Learning </h4><hr>
+				<p>
+				<b>Emmanuel Hartman$^1$</b>, Emery Pierson$^2$, Martin Bauer$^3$, Nicolas Charon$^1$<br>
+				<br>$^1$Department of Mathematics, University of Houston<br>
+				$^2$ LIX, Ecole Polytechnique, France<br>
+				$^3$Department of Mathematics, Florida State University<br></p><hr><p>
+				10 December 2024
+				</p>
+				<div class="row">
+					<div class="col-md-6" align="left" markdown="1">
+					</div>
+					<div class="col-md-6" align="right" markdown="1">
+					<img src="figs/nsf.png" width="20%" />
+				</div>
+				</div>
+</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Shape Learning</h4><hr>
+	<div class="row">
+		<div class="col-md-7" align="left" markdown="1">
+		<p>Consider a space of parameterized objects $\Imm$ acted on by a group of reparameterizations $\Diff$. The goal of <b>shape learning</b> is to approximate a function $f:\Imm \to \mathcal{Y}$ such that $f$ is <b>invariant</b> to the action of $\Diff$. i.e. $$\text{if  } \exists \gamma\in\Diff \text{ s.t. } q_1 = q_2 \circ \gamma, \quad f(q_1)=f(q_2).$$</p>
+		<p>One goal of shape learning is to ensure our approximation of $f$ maintains the desired invariance property.</p>
+		<hr>
+		<p>Classification: $\mathcal{Y} = \R^C$</p><br>
+		<img src="figs/humanbodies.png" width="55%"/>
+		<img src="figs/leaves.png" width="35%"/>
+		</div>
+		<div class="col-md-5" align="left" markdown="1">
+		</div>
+	</div>
+	</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Parameterization Invariant Latent Space Representations</h4><hr>
+	<div class="row">
+		<div class="col-md-8" align="left" markdown="1">
+		<p>We utilize a parameterization invariant latent space representation, $E:\Imm\to \mathcal{L} = \R^m$ so that $E$ is invariant to the action of $\Diff$.<br><br>Then to approximate $f$, we must learn a function $g:\mathcal{L}\to \mathcal{Y}$ such that $$g\circ E \approx f.$$</p>
+		</div>
+	</div>
+	</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">PointNet[1] and similar methods for point clouds</h4><hr>
+	<div class="row">
+		<p>In the context of 3D pointclouds, we consider $\Imm = \{q:\{1,2,..,n\} \to \R^3\}$ and the group of reparameterizations $\Diff = S_n$ is the symmetric group on $n$ elements.</p><br><br>
+		<div class="col-md-7" align="left" markdown="1">
+		<p>To learn a parameterization invariant representation of pointclouds PointNet learns a function $m: \R^3 \to \R^{1024}$ and considers $E:\Imm \to \R^{1024}$ given by $$E(q) = \sum_{i=1}^n m\circ q(i).$$ </p><br>
+		<p>By the symmetry of addition, $E$ is invariant to the action of $S_n$. Alternatively, other symmetric functions (i.e max pooling) can be used.</p>
+		</div>
+		<div class="col-md-5" align="left" markdown="1">
+			<img src="figs/PointNet_Overview.png" width="100%"/>
+		</div>
+		<p align="left"><sub>$^1$ Qi et. al. "PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation."</sub><br>
+	</div>
+	</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Pitfalls for Using These Approaches on Continuous Data</h4><hr>
+		<div class="row"><p>For the remainder of the talk, we will consider continuous 3D data such as curves, surfaces, or shape graphs.<br> In this context, we fix a template manifold $M$ and consider parameterized objects as $\Imm = \operatorname{Imm}(M,\R^3)$ and the group of reparameterizations as $\Diff= \operatorname{Diff}(M)$.</p><br><br>
+		<div class="col-md-9" align="left" markdown="1"><br>
+			<p class="fragment fade-left">+ These frameworks ignore the connectivity of graph and mesh data and learn based exclusively on the vertices.<br><br></p><br>
+		<p class="fragment fade-left">+ The feature vector architectures discussed previously are designed to be invariant to the action of $S_n$ on a point cloud and are NOT invariant to the action of $\operatorname{Diff}(M)$.<br></p>
+		</div>
+		<div class="col-md-3" markdown="1"><img src="figs/MeshVerts.png" width="60%"/>
+		</div>
+		<p class="fragment fade-left">Despite this, several frameworks (i.e. 3DCoded$^1$) exist using these methods on point cloud discretizations of continuous data.<br></p>
+		</div>
+		<p align="left"><sub>$^1$Groueix, et al. "3D-CODED : 3D Correspondences by Deep Deformation."</sub><br>
+	</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Parameterization Invariant Representations from Geometric Measure Theory$^{1,2,3,4}$</h4><hr>
+		<div class="row">
+		<div class="col-md-8" markdown="1" align="left">
+		<p>For any $q\in \Imm$ we can associate a varifold $\mu_q\in\mathcal{M}(\mathbb R^3\times S^{2})$ as the push forward measure $\mu_q:= (q,n_q)_*\operatorname{vol}_q$ where $n_q$ is the unit normal map (or unit tangent map) of $q$. In particular, for any $\gamma\in\Diff$, $\mu_{q\circ\gamma} = \mu_q$.</p><br>
+		<p class="fragment" data-fragment-index="1"><br>Unfortunately, to represent the varifold associated with an objects with a fixed finite dimension requires solving a quantization problem.</p><br>
+		<p class="fragment" data-fragment-index="2">
+		<br>To avoid this problem, we will first need a distance function on the space of varifolds. We will equip $\mathcal{M}(\mathbb R^3\times S^{2})$ with the an RKHS norm $\|\cdot\|_{V}$ where for $\mu_{q}$ and $\mu_{p}$ the scalar product can be written as: \begin{equation*}\label{equ:norm_var}
+		\langle \mu_{q},\mu_{p}\rangle_{V}=\iint_{M \times M}e^{-\alpha||q(x)-p(y)||^2}\langle n_q(x), n_p(y)\rangle^2\vol_{q}(x) \vol_{p}(y).
+		\end{equation*}</p>
+	</div>
+		<div class="col-md-4" markdown="1" align="right"><img src="figs/Face_fullsample.png" width="40%" /><img src="figs/Face_downsampled.png" width="40%" /><hr><img src="figs/varifold_similar.png" width="100%" /></div>
+		<p align="left"><sub>$^1$Charon & Trouvé. "The varifold representation of nonoriented shapes for diffeomorphic registration."</sub><br>
+		<sub>$^2$Kaltenmark, et al. "A general framework for curve and surface comparison and registration with oriented varifolds."</sub><br>
+	  <sub>$^3$Feydy et al. "Optimal transport for diffeomorphic registration"</sub><br>
+    <sub>$^4$ Roussillon & Glaunès. "Representation of surfaces with normal cycles and application to surface registration."</sub><br></p>
+		</div>
+	</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">Varifold Gradient For Representing Shapes</h4><hr>
+<div class="row"><p> We propose a data driven method for parameterization invariant representations of shapes with fixed dimension.</p>
+<p> We fix a template object $\mathcal{T}\in\Imm$, and compute the gradient of the varifold distance between $\mathcal{T}$ and the input data $q$ with respect to the vertices of $\mathcal{T}$. <br><br></p>
+<div class="col-md-6" markdown="1" align="left">
+	<p class="fragment fade-left">+ $\operatorname{VariGrad}(q)$ is a vector field on $\mathcal{T}$ and thus has fixed dimension $3M$ independent of the dimensionality of $q$. <br><br></p>
+	<p class="fragment fade-left">+ Intuitively, this gives a first order approximation of how to deform $\mathcal{T}$ into the same shape as $q$. <br><br></p>
+	<p class="fragment fade-left">+ Due to the properties of varifolds, it is parameterization blind and robust to imaging noise. <br><br></p>
+</div>
+<div class="col-md-6" markdown="1" align="center"><img src="figs/VariGradDef.png" width="100%"/><img src="figs/VarigradVisualization.png" width="100%"/></div>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">Datasets</h4><hr>
+<div class="row" align="left">
+	<p>We first consider numerical results on four datasets of 3-dimensional curves/shape graphs.</p>
+	<div class="col-md-6" markdown="1" align="left">
+	<p>We extract this geometric data from surface meshes from the COMA (faces), DFAUST, and FAUST (human bodies) datasets. <br><br>
+	The COMA and DFAUST datasets contain scans of 12 identities present in each dataset. We include these as labels to train the classifier network.<br><br>
+	The FAUST data set contains significatly fewer meshes, so we use this data extracted from this set to test the generalizability of models trained on DFAUST.<br><br>
+	Finally, we consider a set of 100 resamplings of random shape graphs from the DFAUST testing data to test the reparameterization invariance of each model trained on DFAUST.
+	</p>
+	</div>
+	<div class="col-md-6" markdown="1" align="left">
+	<img src="figs/extraction.png" width="100%"/><br>
+	<p></p>
+	</div>
+	<img src="figs/datasets.png" width="100%"/>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">Downstream Learning Tasks</h4><hr>
+<div class="row">
+<div class="col-md-12" markdown="1" align="left">
+	<p>We evaluate the feature vector architectures based on two downstream tasks for unregistered data. We would like to: </p><br>
+	<p class="fragment fade-left">+ classify unregistered data where labels depend on the shape of an object.</p> <br>
+	<p class="fragment fade-left">+ produce reconstructions of discrete shape graphs with a fixed point to point correspondence.</p> <br>
+	<div class="r-stack" markdown="1" align="left">
+	<span class="fragment current-visible"><img src="figs/DownStream.png" width="100%"/></span>
+	</div>
+</div>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">VariGrad Results</h4><hr>
+<div class="row">
+<div class="col-md-8" markdown="1" align="left"><img src="figs/VariGradResults.png" height="80%"/></div>
+<div class="col-md-4" markdown="1" align="center"><img src="figs/VariGradReconstruction.png" height="80%"/></div>
+</div>
+</textarea>
+</section>
+
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">VariGrad Results Continued</h4><hr>
+<div class="row">
+<div class="col-md-5" markdown="1" align="left"><img src="figs/VariGradResults2.png" height="80%"/></div>
+<div class="col-md-7" markdown="1" align="center"><span class="fragment fade-left"><img src="figs/invariance.png" width="100%"/></span></div>
+</div>
+</textarea>
+</section>
+
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">Varifold Gradient with Latent Space Models</h4><hr>
+<div class="row"><p>We propose a modification to the VariGrad framework for latent space parameterizations of shapes of a particular modality. For this talk in particular we will consider models that parameterize the space of human bodies. <br><br></p>
+<div class="col-md-6" markdown="1" align="left">
+	<p class="fragment fade-left">+ Consider an existing (frozen) latent space model $G:\R^m\to\mathcal{S}$. <br><br></p>
+	<p class="fragment fade-left">+ $\operatorname{VariGrad}_G$ computes the varifold gradient with respect to the parameters of $G$. <br><br></p>
+	<p class="fragment fade-left">+ Intuitively, this $m$-dimensional vector gives a first order approximation of a latent code $v$ such that $G(v)$ is the same shape as $q$. <br></p></div>
+<div class="col-md-6" markdown="1" align="center"><img src="figs/LatentSpaceConstrainedVarigrad.png" width="100%"/><br><img src="figs/retreival_fig_draft.png" width="75%"/></div>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left"> Training the Reconstruction Model</h4><hr>
+<div class="row">
+	<p>For frozen latent space model $G$ we train an MLP to predect the parameters that $G$ maps to the same shape as $q$ with fixed point to point correspondances. </p>
+	<img src="figs/retreival_fig.png" width="70%"/></div>
+	<p>We separate the registered DFAUST human bodies dataset into registered testing and training sets as well as take a set of unregistered DFAUST data to evaluate generalizability.</p>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">VariGrad Results</h4><hr>
+<div class="row">
+<p>We then test the model on the unseen testing set of registered data as well as an unseen testing set of unregistered scans of human bodies.</p><br><br>
+<div class="col-md-6" markdown="1" align="left"><span class="fragment fade-left"><img src="figs/NumericalResults.png" width="80%"/></span><br><br><span class="fragment fade-left"><img src="figs/VariGradOnPhoneScan.png" width="80%"/></span><br></div>
+<div class="col-md-6" markdown="1" align="left"><span class="fragment fade-left"><img src="figs/Numerical2.png" width="80%"/></span><br><br><span class="fragment fade-left"><img src="figs/ReparamResults.png" width="100%"/></span><br></div>
+<p align="left"><sub>$^{13}$Groueix, et al. "3D-CODED : 3D Correspondences by Deep Deformation."</sub><br>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">VariGrad for Clustering and Classification</h4><hr>
+<div class="row">
+	<p>We consider a dataset of 3D surfaces representing left atrial appendages (LAA) of a large cohort (n=543) of patients. Several works have shown that morphological changes in the LAA are correlated to ischemic stroke[1,2].</p>
+	<br><p>Previous works (i.e. [1]) have considered LAAs which are manually classified as one of four morphological types and shown there is significant difference in relative stroke rates of these clusters. </p>
+	<div class="col-md-8" markdown="1" align="left"><br>
+		<p>We perform two experiments using the varigrad representations of the LAA data set:</p><br><br>
+		<p>+ we perform automatic clustering of the samples into 4 clusters and compare the relative rates of stroke across each cluster.</p><br><br>
+		<p>+ we train a support vector classifier on the varigrad representations of 143 LAAs supervised with ground truth labels. We test the performance of this classifier on the remaining 400 patients to validate the model. </p>
+	</div>
+	<div class="col-md-4" markdown="1" align="center">
+		<br>
+		<img src="figs/LAA_varigrad_examples.gif" width="100%" />
+		<br>
+	</div>
+</div>
+<div class="row" align = "left">
+	<p align="left"><sub>$^1$Biase et al. "Does the Left Atrial Appendage Morphology Correlate With the Risk of Stroke in Patients With Atrial Fibrillation?: Results From a Multicenter Study"<br></sub>
+	<p align="left"><sub>$^2$ Ahmad et al. "Elastic shape analysis computations for clustering left atrial appendage geometries of atrial fibrillation patients"</sub>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">VariGrad for Clustering and Classification Results</h4><hr>
+<div class="row">
+	<div class="col-md-4" markdown="1" align="left">
+		<div class="fragment fade-left">
+		<p><b>Clustering:</b></p>
+		<p>The automatic clustering based on the $L^2$ distance between varigrads produces similar clusters to the manual clustering with similar relative stroke rates across the clusters.</p>
+		<img src="figs/HeartClusterMeans.png" width="80%" />
+	</div>
+	</div>
+	<div class="col-md-4" markdown="1" align="left">
+	<div class="fragment fade-left">
+		<p><b>Classification:</b></p>
+		<p>The SVM classifier produces an accuracy of $83.5\%$ with $10.25\%$ false positives and $6.25\%$ false negatives. <br><br> Additionally, we can visualize the disciminant direction of the SVM model as a vector field on the template. This vector field can be interpreted as the type of deformation that leads to higher risk of ischemic stroke.   </p>
+	</div>
+</div>
+	<div class="col-md-4" markdown="1" align="center">
+	<div class="fragment fade-left">
+		<img src="figs/LAA_varigrad_examples.gif" width="100%" />
+		<br><br>
+		<img src="figs/regression_LAA.gif" width="100%" />
+	</div>
+</div>
+</div>
+</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Conclusion + Future Directions</h4><hr>
+		<p align="left">We propose two models based on varifold gradients to compute parameterization invariant feature vector representations of continuous shape data such as shape graphs, curves and surfaces.<br><br>
+		</p><div class="row">
+		<div class="col-md-8" markdown="1" align="left">
+			<p class="fragment fade-left"> + These models produce results that are both theoretically and empirically parameterization blind.</p>
+			<p class="fragment fade-left"> + These models require less trainable parameters than existing models for point cloud data.<br><br></p>
+			<p class="fragment fade-left"> - Develop theoretical properties of the varifold gradient operator. </p>
+			<p class="fragment fade-left"> - Do we need deep learning? What can we accomplish with the varifold gradient operator directly while obtaining more explainable results? </p>
+			<hr>
+			<p><sub>
+				This talk is based on:<br><a href="https://diglib.eg.org/handle/10.2312/3dor20231150">https://diglib.eg.org/handle/10.2312/3dor20231150</a><br>
+				<a href="https://arxiv.org/pdf/2411.03475">https://arxiv.org/pdf/2411.03475</a><br>
+				The code for a Pytorch implementation VariGrad model for shape graphs is available at:<br> <a href="https://github.com/emmanuel-hartman/Pytorch_VariGrad">https://github.com/emmanuel-hartman/Pytorch_VariGrad</a><br>
+		</sub></p>
+		</div>
+		<div class="col-md-4" markdown="1" align="center">
+		<img src="figs/HeartClusterMeans.png" width="80%" />
+		<br><br>
+		<center><p class="fragment fade-left">Thank you to the organizers for inviting me to speak and thank you for your attention!</p></center>
+	</textarea>
+</section>
+
+		<script src="../../revealjs/dist/reveal.js"></script>
+		<script src="../../revealjs/plugin/zoom/zoom.js"></script>
+		<script src="../../revealjs/plugin/notes/notes.js"></script>
+		<script src="../../revealjs/plugin/search/search.js"></script>
+		<script src="../../revealjs/plugin/markdown/markdown.js"></script>
+		<script src="../../revealjs/plugin/highlight/highlight.js"></script>
+    <script src="../../revealjs/plugin/math/math.js"></script>
+		<script>
+
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+				width: 1280,
+				height: 720,
+				progress: false,
+
+				plugins: [RevealMath.MathJax2,RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>
