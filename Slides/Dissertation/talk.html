@@ -1,1 +1,731 @@
+<!doctype html>
+<html lang="en">
 
+	<head>
+		<meta charset="utf-8">
+
+		<title>Dissertation</title>
+
+		<meta name="description" content="Methods of Shape Analysis: Optimal Transport, Geometric Measure Theory, and Deep Learning">
+		<meta name="author" content="Emmanuel Hartman">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="../../revealjs/dist/reset.css">
+		<link rel="stylesheet" href="../../revealjs/dist/reveal.css">
+		<link rel="stylesheet" href="../../revealjs/dist/theme/H2_Talk.css" id="theme">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="../../revealjs/plugin/highlight/monokai.css">
+		<style>
+    .reveal section p {
+    display: inline-block;
+    font-size: 0.5em;
+    line-height: 1.2em;
+    text-align: left;
+    vertical-align: top;
+		margin-bottom: .2em
+	  }
+
+		sub {
+    	font-size: 0.2em;
+		}
+		div.title {
+		  border-radius: 10px;
+		  width: 100%;
+		  border: 1px solid #000000;
+		  background-color: rgba(133, 167, 255, 0.8);
+		  padding: 2px 2px;
+		}
+
+		div.btitle {
+		  width: 100%;
+	    	  font-size: 0.6em;
+		  background-color: #7878ff;
+		  border-radius: 5px;
+		  padding: 0px 10px 2px 10px;
+		}
+		div.b {
+		  width: 100%;
+		  background-color: #cccccc;
+		  border-radius: 10px;
+		  padding: 0px 10px 10px 10px;
+		}
+		table, tbody, tr, th, td{
+		    background-color: rgba(0, 0, 0, 0.0) !important;
+		}
+		</style>
+	</head>
+
+<body>
+
+<div class="reveal">
+	<div class="slides">
+		$\renewcommand{\Diff}{\mathcal{D}}\renewcommand{\T}{\mathcal{T}}\newcommand{\dist}{\mathrm{dist}}\renewcommand{\Imm}{\mathcal{I}}\newcommand{\Shape}{\mathcal{S}}\newcommand{\R}{\mathbb{R}}\newcommand{\vol}{\operatorname{vol}}\newcommand{\Vol}{\mathrm{Vol}}\newcommand{\Var}{V}$
+
+
+	<section data-markdown>
+	<textarea data-template>
+		<h4>Methods of Shape Analysis:<br> Optimal Transport, Geometric Measure Theory, and Deep Learning</h4><hr>
+		<p>
+		Emmanuel Hartman<br>
+		<br>Department of Mathematics, Florida State University<br></p><hr><p>
+		PhD Thesis Defense <br>
+		23 February 2024
+		</p>
+	</textarea>
+	</section>
+
+<!-- MOTIVATION AND MATHEMATICAL FORMULATIONS -->
+<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Motivation</h4><hr>
+	<div class="row">
+	<div class="col-md-4" markdown="1">
+		<img src="figs/pointcloud.png" width="45%" />
+		<img src="figs/facegraph.png" width="45%" />
+		<img src="figs/humanbodies.png" width="100%" />
+	</div>
+	<div class="col-md-5" markdown="1">
+		<img src="figs/face.png" width="45%" /><img src="figs/skulls.gif" width="45%" />
+		<img src="figs/leachy_untextured2.png" width="25%" /><img src="figs/leachy_untextured.png" width="25%" /><img src="figs/viola.png" width="45%" />
+	</div>
+	<div class="col-md-3" markdown="1">
+		<img src="figs/leaves.png" width="100%" /><br><br><br>
+		<img src="figs/SPDA_0.png" width="30%" />
+		<img src="figs/SPDA_2.png" width="30%" />
+		<img src="figs/SPDA_orig.png" width="30%" />
+	</div>
+	</div>
+	<p>Geometric data includes variability which does not change the shape of the data (i.e translation, rotation, and reparameterization)</p>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">The Space of Shapes</h4><hr>
+		<div class="row">
+			<div class="col-md-8" markdown="1" align="left">
+			<p>We want to only consider variability of the data which come from changes in the shape of objects. As such, we consider the following quotient space construction. </p>
+			<hr><p>Consider a template space $M$. \begin{align*}
+			&\textbf{Parameterized Objects:}\\
+			&\qquad \Imm =\operatorname{Imm}(M,\R^3)\big/(\operatorname{SO}(3)\rtimes \R^3) \\
+			&\textbf{Reparameterization Group:}\\
+			&\qquad \Diff = \operatorname{Diff}_+(M)\\
+			&\textbf{Unparameterized Shapes:}\\
+			&\qquad \Shape = \Imm/\Diff\qquad [f]=\{f\circ\gamma|\gamma\in\Diff\}
+			\end{align*}</p>
+			<hr>
+			<p>
+			The goal of shape analysis is put a distance function or a Riemannian metric on $\Shape$, which we will utilize to analyze variations in the shape of populations of geometric objects.<br><br>
+			Our approach is to define distances (or Riemannian metrics) on $\Imm$ which are invariant under the action of $\Diff$ so that they may be descended onto $\Shape$. These distances and metrics are formulated as optimizations over the reparameterization group.
+			</p>
+			</div>
+			<div class="col-md-4" markdown="1" align="left">
+				<img src="figs/OrbitFig.png" width="100%" />
+			</div>
+		</div>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Outline</h4><hr>
+		<div class="row">
+		<div class="col-md-12" markdown="1" align="left">
+			<p>+ <b>Shape Distances and Unbalanced Optimal Transport Metrics</b><br><br></p><br>
+			<p>+ Relaxed Matching Frameworks using Varifold Representations<br><br></p><br>
+			<p>+ Deep Learning for Parameterization Invariant Shape Representations<br><br></p>
+		</div>
+		</div>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+		<textarea data-template>
+		<h4 align="left">The SRNF Map</h4><hr>
+
+		<div class="row">
+		<div class="col-md-12" align="left" markdown="1">
+		<p>Consider the case where $M$ is a 2-manifold. Let $f\in\Imm(M,\R^3)$ and $x\in M$. We define $n_f(x)$ to be the oriented normal vector and $a_f(x)$ to be the Jacobian determinant at $f(x)$.</p>
+		<p>The square root normal field (SRNF)  map is defined to be \begin{align*} \phi&:\Imm(M,\R^3)\to L^2(M,\R^3) \text{ given by  } \phi(f)=q_f\text{ where }q_f(x):=\sqrt{a_f(x)}n_f(x). \end{align*}</p>
+		<p>This map gives rise to the SRNF psuedo-distance on $\Imm(M,\R^3)$ defined via \[d_{\phi}(f_1,f_2)^2=\int_M\|\phi(f_1)-\phi(f_2)\|^2 dm.\]</p><br>
+
+
+		<p>This distance is invariant to the action of $\Diff(M)$ and descends to a psuedo-distance on the shape space $\Shape(M,\R^3)$ given by \[d_\mathcal{S}([f_1],[f_2])^2=\inf\limits_{\gamma\in \Diff(M)} d_\phi(f_1,f_2\circ\gamma)^2=\inf\limits_{\gamma\in \Diff(M)}\int_M\left\|\phi(f_1)-\phi(f_2)\circ\gamma\sqrt{|D\gamma|}\right\|^2 dm.\]</p>
+		<hr>
+		<p><sub>[1] Ian H Jermyn, Sebastian Kurtek, Eric Klassen, and Anuj Srivastava. "Elastic shape matching of parameterized surfaces using square root normal field"</sub></p>
+		</div>
+		</div>
+		</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+			<h4 align="left">Optimal Transport vs. Unbalanced Optimal Transport</h4><hr>
+			<div class="row">
+			<div class="col-md-8" markdown="1" align="left">
+				<p>The goal of optimal transport (OT) is to define a metric between measures on a metric space $(N, d_N)$ based on the energy required to move mass around the space $N$. <br><br></p>
+				<p>However, OT distances cannot compare two measures with different total masses because these models do not allow for the creation or destruction of mass. <br><br></p>
+				<p>Unbalanced optimal transport (UOT) metrics such as the Wasserstein-Fisher-Rao distance seek to ovecome this by allowing for the penalized creation and destruction of mass.<br><br></p>
+			</div>
+			</div>
+		<div class="row" align="left">
+		<div class="col-md-6" markdown="1" align="left">
+			<p><sub>OT (Wasserstein)</sub></p><img src="figs/OTgif.gif" width="100%" /><br>
+		</div><div class="col-md-6" markdown="1" align="left" vertical-align="center">
+			<p><sub>UOT (Wasserstein-Fisher-Rao)</sub></p><img src="figs/WFRgif.gif" width="100%" /><br>
+		</div>
+			<p>We denote the space of Radon measures on $N$ by $\mathcal{M}(N)$ and the finitely supported measures on $N$ by $\mathcal{M}_0(N)$.</p>
+		</div>
+
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+			<h4 align="left">Kantorovich Formulation of the WFR</h4><hr>
+			<div class="row" align="left">
+			<div class="col-md-6" markdown="1" align="left">
+			<p>Consider $\mu,\nu\in\mathcal{M}(N)$. </p>
+			<div class="b" align="left"><div class="btitle"><h4>Definition&nbsp;&nbsp;&nbsp;&nbsp;[1]</h4></div><p align="left">
+			A <em> semi-coupling</em> from $\mu$ to $\nu$ is is a pair $(\gamma_0,\gamma_1) \in \mathcal{M}(N\times N)^2$ such that
+			\[(\operatorname{Proj}_0)_\# \gamma_0 = \mu \qquad \text{ and } \qquad (\operatorname{Proj}_1)_\# \gamma_1 = \nu.\] We denote the space of all semi-couplings by $\overline{\Gamma}(\mu,\nu).$</p>
+			</div></div>
+			<div class="col-md-6" markdown="1" align="left">
+				<p><sub>UOT (Wasserstein-Fisher-Rao)</sub></p><img src="figs/WFRgif.gif" width="100%" /><br>
+			</div>
+			<p><br>The <em>Wasserstein-Fisher-Rao</em> distance from $\mu$ to $\nu$ is given by
+			\[\operatorname{WFR}(\mu,\nu)^2=\mu(N) + \nu(N) - 2\sup\limits_{(\gamma_0,\gamma_1) \in \overline{\Gamma}(\mu,\nu)} \int_{N\times N} \overline{\cos}(d_N(u,v))\sqrt{\frac{\gamma_0}{\gamma}(u,v)\frac{\gamma_1}{\gamma}(u,v)}  \, d\gamma(u,v)  \]</p>
+			<p>where $\gamma\in\mathcal{M}(N \times N)$ such that $ \gamma_1,\gamma_2\ll\gamma $ and $\overline{\cos}(\theta)= \cos(\max(\theta, \pi/2))$.</p><hr>
+			<p><sub>[1] Chizat et. al.  "Unbalanced Optimal Transport: Dynamic and Kantorovich Formulations" </sub></p>
+			</div>
+	</textarea>
+	</section>
+
+
+	<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Kantorovich Formulation of the WFR for $\mathcal{M}_0(N)$</h4><hr>
+		<div class="row" align="left">
+		<div class="col-md-6" markdown="1" align="left">
+		<p>Let $\mu,\nu\in\mathcal{M}_0(N)$ with $\mu=\sum_{i=1}^m a_i \delta_{u_i}$ and $\nu=\sum_{j=1}^n b_j\delta_{v_j}$. </p>
+		<div class="b" align="left"><div class="btitle"><h4>Definition&nbsp;&nbsp;&nbsp;&nbsp;[1]</h4></div><p align="left">
+		A <em> discrete semi-coupling</em> from $\mu$ to $\nu$ is is a pair of matrices $(A,B)$ with non-negative entries satisfying<br>
+		\[0 = \sum_{j=0}^nA_{0j},\, a_i=\sum_{j=0}^nA_{ij}, \, 0 = \sum_{i=0}^mB_{i0}, \, b_j=\sum_{i=0}^mB_{ij}.\]
+		<p>We denote the space of all discrete semi-couplings by $\overline{\Gamma}_0(\mu,\nu).$</p>
+		</div>
+		</div>
+		<div class="col-md-1" markdown="1" align="left">
+		</div>
+		<div class="col-md-5" markdown="1" align="left">
+			<p class="fragment fade-left">In [1], it was shown that there was a closed formula for the optimal $A$ given a fixed $B$ and vice versa.<br><br>Furthermore, the alternating application of these formulas converges to optimal $(A,B)\in \overline{\Gamma}_0(\mu,\nu)$.<br><br><img src="figs/table_Sink.png" width="90%"> </p>
+		</div>
+		<p><br>The <em>Wasserstein-Fisher-Rao</em> distance from $\mu$ to $\nu$ is given by
+		\[\operatorname{WFR}(\mu,\nu)^2=  \sum_{i=1}^m a_i +\sum_{j=1}^n b_j - 2 \sup\limits_{(A,B) \in \overline{\Gamma}_0(\mu,\nu)}\sum_{i=1}^m\sum_{j=1}^n \overline{\cos}(d_N(u_i,v_j))\sqrt{A_{ij}B_{ij}}  \]</p>
+		<hr><p><sub>[1]   Bauer, <b>H.</b>, Klassen "The Square Root Normal Field Distance and Unbalanced Optimal Transport"</sub></p>
+		</div>
+	</textarea>
+	</section>
+
+
+	<section data-markdown>
+		<textarea data-template>
+			<h4 align="left">Equivalence Result</h4><hr>
+			<div class="row">
+				<div class="col-md-8" markdown="1" align="left">
+					<p>Consider the map $\Psi: L^2(M,\R^3) \to \mathcal{M}(S^2)$  where $q\mapsto\mu_q$ defined by for all $U\subseteq S^2$,
+					\[\mu_q(U) = \int_{U^*} q(x)\cdot q(x) \, dm \text{ where } U^* = \left\{x\in M \text{ s.t. } \frac{q(x)}{|q(x)|} \in U\right\}.\]</p>
+					<div class="b" align="left"><div class="btitle"><h4>Remark&nbsp;&nbsp;&nbsp;&nbsp;[1]</h4></div><p align="left">
+					For $f\in \Imm(M,\R^3)$ and $\gamma\in \Diff(M)$, \[\Psi(\phi(f))= \Psi(\phi(f\circ \gamma)).\]
+					</div>
+					<br>
+					<div class="b" align="left"><div class="btitle"><h4>Theorem&nbsp;&nbsp;&nbsp;&nbsp;[2]</h4></div><p align="left">
+					For $f_0,f_1\in \Imm(M,\R^3)$, \[\qquad d_\Shape ([f_0],[f_1]) = \operatorname{WFR}(\Psi\circ\phi(f_0),\Psi\circ\phi(f_1)) .\]
+					</div>
+				</div>
+				<div class="col-md-4" markdown="1" align="left">
+					<p  class="fragment fade-left"><br><br><br><br><br><br><br><br>
+					<img src="figs/diagram.png" width="100%" /></p>
+				</div>
+			</div>
+			<hr><p><sub>[1]  Bauer, <b>H.</b>, Klassen "The Square Root Normal Field Distance and Unbalanced Optimal Transport"<br>[2]  <b>H.</b>, Bauer, Klassen "Square Root Normal Fields for Lipschitz surfaces and the Wasserstein Fisher Rao metric"</sub></p>
+		</textarea>
+	</section>
+
+
+	<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Open Questions about the SRNF </h4><hr>
+		<div class="row">
+			<div class="col-md-12" markdown="1" align="left">
+				Since its conception in [1], it has been know that the SRNF transform, $\phi$, is not surjective. As a consequence of our result we can also characterize the image of $\phi$.
+				<br><br>
+				<span  class="fragment fade-left">
+				<div class="b" align="left"><div class="btitle"><h4>Theorem&nbsp;&nbsp;&nbsp;&nbsp;[1]</h4></div><p align="left">
+				Let $f\in\Imm(S^2,\mathbb R^3)$ and let $q=\phi(f)\in L^2(S^2,\R^3)$. Then $q$ satisfies the closure condition $\int_{S^2}q(x)|q(x)|\,dm=0$.<br></p>
+				<p>Moreover, the closure of the image of $\phi$ is given by the set $$\mathcal{U}:=\left\{ q\in L^2(S^2,\R^3) \text{ such that } \int_{S^2}q(x)|q(x)|\,dm=0\right\}.$$</p>
+				</div></span>
+			</div>
+		</div>
+		<hr><p><sub>[1] Ian H Jermyn, Sebastian Kurtek, Eric Klassen, and Anuj Srivastava. "Elastic shape matching of parameterized surfaces using square root normal field"</sub></p>
+	</textarea>
+	</section>
+
+
+	<section data-markdown>
+		<textarea data-template>
+			<h4 align="left">Application of the Algorithm for Triangular Meshes</h4><hr>
+			<div class="row" align="left">
+			<div class="col-md-6" markdown="1" align="left">
+			<div class="b" align="left"><div class="btitle"><h4>Remark&nbsp;&nbsp;&nbsp;&nbsp;[1]</h4></div><p align="left">
+				For $f_1\in \Imm(M,\R^3)$ and $f_1$ is piecewise linear, then $\Psi\circ\phi (f_1)$ is finitely supported.
+			</div>
+			<br>
+			<p>Thus, we can compute the SRNF distance by applying the algorithm on the previous slide.<br><br></p>
+			<div class="col-md-11" markdown="1" align="left">
+				<p>The computation of pairwise distances can be effectively used for clustering and classification methods [2]. <br><br></p>
+				<p>Our method offers an effecient framework for the computation of these distances between triangularmeshes with arbitrary topological structure.<br><br></p>
+				<p>Our method does <b>not</b> result in precise point to point correspondances between surfaces.<br><br></p>
+			</div>
+			</div>
+			<div class="col-md-6" markdown="1" align="left">
+			</p><img src="figs/fuzzy.png" width="100%" /><br>
+			</p><img src="figs/3DMDS.png" width="100%" /><br>
+			</div>
+		</div>
+		<hr>
+		<p><sub>[1] Bauer, <b>H.</b>, Klassen "The Square Root Normal Field Distance and Unbalanced Optimal Transport" <br> [2]  Laga, Xie, Jermyn, Srivastava "Numerical Inversion of SRNF Maps for Elastic
+			Shape Analysis of Genus-Zero Surfaces" </sub></p>
+		</textarea>
+		</section>
+
+<!-- H2_Surface Match and BaRe-ESA -->
+
+	<section data-markdown>
+		<textarea data-template>
+			<h4 align="left">Outline</h4><hr>
+			<div class="row">
+			<div class="col-md-12" markdown="1" align="left">
+				<p>+ Shape Distances and Unbalanced Optimal Transport Metrics<br><br></p><br>
+				<p>+ <b>Relaxed Matching Frameworks using Varifold Representations</b><br><br></p><br>
+				<p>+ Deep Learning for Parameterization Invariant Shape Representations<br><br></p>
+			</div>
+			</div>
+		</textarea>
+	</section>
+
+	<section data-markdown>
+		<textarea data-template>
+			  <h4 align="left">Riemannian Metrics on Shape Space</h4><hr>
+			  <div class="row">
+			  <div class="col-md-8" markdown="1" align="left">
+			  <p>
+			  Our goal now is to equip the manifold $\Imm$ with a Riemannian metric $G$ that is invariant to the the action of $\Diff$ i.e.
+			  \begin{multline}
+			  \text{for }  q\in \Imm, \; h,k\in T_q\Imm, \; \gamma\in\Diff,\qquad
+			  G_q(h,k)=G_{q\circ \gamma}(h\circ\gamma,k\circ\gamma). \qquad (1)
+			  \end{multline}<br>
+			  The geodesic (psuedo) distance associated with $G$ on $\Imm$ is given by
+			  \begin{multline*}
+			  d_{\Imm}(q_0,q_1)=\inf\limits_{q\in \mathcal{P}_{q_0}^{q_1}} \int_0^1\sqrt{G_{q(t)}(\partial_t q(t),\partial_t q(t))} dt\\
+			  \text{ where }
+			  \mathcal P_{q_0}^{q_1}:= \left\{C^{\infty}([0, 1], \Imm): q(0) = q_0, q(1) = q_1\right\}.
+			  \end{multline*}<br>
+			  Given a metric satisfying (1), the projection $\pi:\Imm\to \Shape$ is a Riemannian submersion and the geodesic distance corresponds to a distance on $\Shape$ via
+			  \begin{equation*}
+			  d_{\Shape}([q_0],[q_1])=\inf_{\gamma\in \Diff} d_{\Imm}(q_0,q_1\circ\gamma).
+			  \end{equation*}
+			  </p>
+			  </div>
+			  <div class="col-md-4" markdown="1" align="center">
+			  <img src="figs/OptOrbits1.png" width="100%" />
+			  </div>
+			  </div>
+			  </div>
+		  </textarea>
+	  </section>
+
+	  <section data-markdown>
+		<textarea data-template>
+			<h4 align="left">Relaxed Matching Frameworks</h4><hr>
+			<div class="row">
+				<div class="col-md-8" markdown="1" align="left">
+					<p>Optimization is taken of over all paths in $\Imm$ with additional terms that measure the discrepancy between the endpoints of the path and the orbits of the $q_0$ and $q_1$. This relaxed problem is given by<br><br>
+					$\inf\limits_{q\in C^\infty([0,1],\Imm)} \displaystyle\int_0^1 G_{q(t)}(\partial_t q(t),\partial_t q(t)) dt + \lambda_0 \Gamma([q(0)], [q_0]) + \lambda_1 \Gamma([q(1)], [q_1]).$<br><br></p>
+					<p>To define $\Gamma$ we utilize parameterization invariant varifold representations of surfaces [1,2].</p>
+					<div class="b" align="left"><div class="btitle"><h4 align="left">Definition</h4></div>
+						<p>The varifold associated with $q\in\Imm$ is defined as $\mu_q:=(q,n_q)_*\vol_q\in\mathcal{M}(\mathbb R^3\times S^{2})$.</p>
+						<p>Moreover for all $\gamma\in \Diff$, $\mu_{q}=\mu_{q\circ\gamma}$.</p>
+					</div>
+					<p><br>We equip $\mathcal{M}(\mathbb R^3\times S^{2})$ with an RKHS norm, $\|\cdot\|_V$ and observe for $p,q\in \Imm$,  $\|\mu_q - \mu_p\|^2_V$ vanishes if $p$ is in the same orbit as $q$.</p>
+					<p class="fragment fade-left"><br>Thus, $\Gamma([p],[q]):=\|\mu_q - \mu_p\|^2_V$ is a natural choice of data loss term.</p>
+				</div>
+				<div class="col-md-4" markdown="1" align="center">
+				<img src="figs/OptOrbits_RelaxedEnds.png" width="90%" /><br>
+				</div>
+				<p align="left"><sub>[1] Nicolas Charon and Alain Trouve. "The Varifold Representation of Nonoriented Shapes for
+					Diffeomorphic Registration.” <br> [2] Irene Kaltenmark, Benjamin Charlier, and Nicolas Charon. "A general framework for curve
+					and surface comparison and registration with oriented varifolds."</sub><br></p>
+				</div>
+		</textarea>
+	</section>
+
+
+	<section data-markdown>
+		<textarea data-template>
+			<h4 align="left">Relaxed Matching Framework of [1]</h4><hr>
+			<div class="row">
+				<div class="col-md-8" markdown="1" align="left">
+					<p align="left">The relaxed matching method was implemented in [1] for the SRNF distance function. In this approach:</p>
+					<p class="fragment fade-left"><br> + the action of the reparametrization group $\Diff$ does not need to be implemented.</p>
+					<p class="fragment fade-left"><br> + surfaces with more general topologies with or without boundary can be analyzed.</p>
+					<p class="fragment fade-left"><br> + certain matching problems lead to mesh faces collapsing and forming spikes.</p>
+					<p class="fragment fade-left">$q_0$:<img src="figs/skull2_multires_matchedsource_high.png" width="20%"/>$q(0)$:<img src="figs/skull2_multires_matchedsource_high.png" width="20%"/>$q(1)$:<img src="figs/skull2_multires_matchedtarget_high.png" width="20%" />$q_1$:<img src="figs/skull2_multires_target.png" width="20%" /></p>
+					<p class="fragment fade-left">Our hypothesis was that this occurred because the SRNF metric does not penalize shearing. To overcome this, we propose performing matching with respect to a higher order metric.</p>
+				</div>
+				<div class="col-md-4" markdown="1" align="center">
+				<img src="figs/OptOrbits_RelaxedEnds.png" width="90%" /><br>
+				</div>
+				<p align="left"><sub>[1] Bauer, Charon, Harms, and Hsieh, “A numerical framework for elastic surface matching, comparison, and interpolation”.</sub><br></p>
+				</div>
+		</textarea>
+	</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">Choice of Metric</h4><hr>
+<div class="row" align="left">
+	<div class="col-md-10" markdown="1" align="left">
+	<div class="b" align="left"><div class="btitle"><h4>Definition [2]</h4></div><p align="left">Let $q\in \Imm$ and $h,k\in T_q\Imm$. We consider a parameterization invariant second order Sobolev metric with the first order term decomposed into four terms via the construction of [1]. We individually weight each of the six terms to define the family of metrics given by
+		\begin{multline*}
+		G_q(h,k)=\int_M\bigg( a_0 \langle h,k \rangle + a_1 g_q^{-1}(dh_m,dk_m) +b_1g_q^{-1}(dh_+,dk_+)+\\ c_1g_q^{-1}(dh_\bot,dk_\bot)+ d_1 g_q^{-1}(dh_0,dk_0)
+		+a_2 \langle\Delta_q h,\Delta_q k\rangle\bigg)\vol_q.
+		\end{multline*}	</p>
+	</div>
+	<br>
+	<div class="b" align="left"><div class="btitle"><h4>Theorem: Properties of the Metic [2,3]</h4></div><p align="left">
+	<br>The metric $G$ as defined above is invariant under the action of $\Diff$.<br><br>
+	If $a_0,a_1,b_1,c_1,d_1,a_2>0$, then $\Imm$ equipped with the metric $G$ has a non-vanishing geodesic distance. <br>
+	</div>
+	</div>
+</div><hr><p align="left"><sub>[1] Su, Bauer, Preston, Laga, and Klassen, “Shape analysis of surfaces using general elastic metrics”. <br>[2] <b>H.</b>, Sukurdeep et al. “Elastic Shape Analysis of Surfaces with Second-Order Sobolev Metrics: A Comprehensive Numerical Framework”.<br> [3] <b>H.</b>, Pierson et al. "Basis Restricted Elastic Shape Analysis on the Space of Unregistered Surfaces". </sub></p>
+</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Solutions to Geodesic Boundary Value Problem</h4><hr>
+		<div class="row" align="left"><p></p>
+			<div class="col-md-5" markdown="1" align="left">
+				<p>	Thus, our relaxed matching energy between $q_0$ and $q_1$ becomes</p><p>
+				$\inf\limits_{q\in C^\infty([0,1],\Imm)} \displaystyle\int_0^1 G_{q(t)}(\partial_t q(t),\partial_t q(t)) dt $ <br> $ \qquad+ \lambda_0 ||\mu_{q_0}-\mu_{q(0)}||^2_{V} + \lambda_1 ||\mu_{q_1}-\mu_{q(1)}||^2_{V}$ <br><br>  with choices of the following hyper-parameters: $\lambda_0,\lambda_1,a_0,a_1,b_1,c_1,d_1,$ and $a_2$.
+				</p> <p>
+				We discretize this energy for piecewise linear paths via finite differences and triangular meshes via discrete differential geometry.
+				</p>
+			</div>
+			<div class="col-md-4" markdown="1" align="right"><img src="figs/cat.gif" width="80%" /><br><img src="figs/ankle.gif" width="35%"/><img src="figs/pose_and_body.gif" width="35%"/></div>
+			<div class="col-md-3" markdown="1" align="left"><img src="figs/faces.gif" width="75%"/> <img src="figs/skulls.gif" width="75%" /></div>
+			</div><hr><p align="left"><sub>[1] <b>H.</b>, Sukurdeep et al. “Elastic Shape Analysis of Surfaces with Second-Order Sobolev Metrics: A Comprehensive Numerical Framework”.</sub><br></p>
+	</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">Surface Matching Results</h4><hr>
+		<center>
+			<table>
+			<img src="figs/skull2_multires_matchedsource_high.png" width="20%"/><img src="figs/skull2_multires_matchedtarget_high.png" width="20%" />
+			<img src="figs/no_spike.png" width="100%" />
+			</table>
+		</center>
+	</textarea>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left">The Varifold Norm and Partial Matching</h4><hr>
+		<table><tr>
+		<td><img src="figs/partial_hand_2_source.png" height="100%" /></td><td><img class="fragment" data-fragment-index="1" src="figs/partial_hand_2.png" height="100%" /></td><td><img src="figs/partial_hand_2_target.png" height="100%" />
+		</td></tr></table><p class="fragment" data-fragment-index="2" align="left">
+		To solve this problem we adopt the approach of [1]. Namely, we define a weight function $\omega:M\to [0,1]$ that quantifies whether a point of the source shape should be matched to the target. We can define the weighted varifold associated with $q(1)$ and $\omega$.
+		We redefine our our relaxed energy as \begin{equation}\inf\limits_{\omega:M\to [0,1], \,\, q\in C^\infty([0,1],\Imm)} \quad \displaystyle\int_0^1 G_{q(t)}(\partial_t q(t),\partial_t q(t)) dt + \lambda_0 ||\mu_{q_0}-\mu_{q(0)}||^2_{V} + \lambda_1 ||\mu_{q_1}-\mu_{q(1),\omega}||^2_{V}\end{equation} and optimize with respect to both the path $q$ and the weighting function $\omega$.<br>
+		<img class="fragment" data-fragment-index="3" src="figs/partial_hand_1.png" height="100%" />
+		</p>
+		<hr>
+		<p><sub>[1] Sukurdeep et al. "A new variational model for shape graph registration with partial matching constraints"</sub></p>
+	</textarea>
+</section>
+
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left"> Statistical Analysis Pipeline </h4><hr>
+		<div class="row">
+			<div class="col-md-4" markdown="1" align="left">
+				<p>In addition to we implemented several algorithms for computing statistics on population of shapes with respect to our family of second order Sobolev metrics.</p><br><br>
+				<p>- solving geodesic initial value problems.<br><br><p>
+				<p>- computing Frechet means.<br><br><p></p>
+				<p>- performing tangent space principle component analysis.<br><br><p>
+				<p>- performing parallel transport via Schild's (or Pole) ladder schemes.<br><br><p>
+			</div>
+			<div class="col-md-4" markdown="1" align="center"><img src="figs/karcher_mean_partial.png" width="50%" /><hr><img src="figs/PCA_CoMA.png" width="80%" /><hr><img src="figs/PCA_unparam_faces.png" width="80%" /></div>
+			<div class="col-md-4" markdown="1" align="left"><img src="figs/cats_mt.gif" width="80%" /><hr><img src="figs/mt.gif" width="100%" /></div>
+		</div>
+		<hr><p align="left"><sub>[1] <b>H.</b>, Sukurdeep et al. “Elastic Shape Analysis of Surfaces with Second-Order Sobolev Metrics: A Comprehensive Numerical Framework”.</sub><br></p>
+	</textarea>
+</section>
+
+
+<section data-markdown>
+	<textarea data-template>
+		<h4 align="left"> <b>Ba</b>sis <b>Re</b>stricted <b>E</b>lastic <b>S</b>hape <b>A</b>nalysis (BaRe-ESA [1,2])</h4><hr>
+		<div class="row">
+			<p>One drawback of the previous framework is that geodesics with respect to the chosen metric may not correspond to biologically relavent or physically feasible deformations for applications.</p>
+			<div class="col-md-8" markdown="1" align="left"><p>
+			<br> We consider the subspace of $\Imm$ which can be reached by linearly deforming a template surface, $\mathcal{T}$, by a basis of allowable deformations, $\{h_i\}_{i=1}^n$.
+			Specifically, we consider surfaces in the image of the map \begin{align*}F:\mathbb{R}^n \to C^\infty(M,\R^3) \text{ defined via }\\ (w_1,...,w_n)\mapsto \mathcal{T}+\sum_{i=1}^n w_ih_i .\end{align*}
+			We equip $\R^n$ with the pullback of $G$ via $F$ and solve the relaxed matching problem in the coeffecient space.
+			<br></p>
+			<br>
+			<p  class="fragment fade-left" data-fragment-index="1">+ This leads to paths that can be acheived via the basis of allowable deformations</p>
+			<p  class="fragment fade-left" data-fragment-index="3">+ Moreover, by solving the matching problem between $\mathcal{T}$ and a target mesh we can find a low dimensional representation of the target in the coeffecient space. </p>
+			</div>
+			<div class="col-md-4" markdown="1" align="center"><img src="figs/h2match_compare_UnRe.png" width="100%" /><span class="fragment fade-left" data-fragment-index="2"><img src="figs/h2match_compare_BaRe.png" width="100%" /></span><hr><span class="fragment fade-left" data-fragment-index="4"><img src="figs/COMA_results_reg.png" width="100%" /></span></div>
+			<hr><p align="left"><sub>[1] <b>H.</b>, Pierson et al. “BaRe-ESA: A Riemannian framework for unregistered human body shapes”.<br>[2] <b>H.</b>, Pierson et al. “Basis restricted elastic shape analysis on the space of unregistered surfaces”.</sub></p>
+		</div>
+	</textarea>
+</section>
+
+<!-- VariGrad -->
+
+	<section data-markdown>
+		<textarea data-template>
+			<h4 align="left">Outline</h4><hr>
+			<div class="row">
+			<div class="col-md-12" markdown="1" align="left">
+				<p>+ Shape Distances and Unbalanced Optimal Transport Metrics<br><br></p><br>
+				<p>+ Relaxed Matching Frameworks using Varifold Representations<br><br></p><br>
+				<p>+ <b>Deep Learning for Parameterization Invariant Shape Representations</b><br><br></p>
+			</div>
+			</div>
+		</textarea>
+	</section>
+
+
+	<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Parameterization Invariant Feature Vectors</h4><hr>
+	<div class="row" align="left">
+	<p>Our primary goal for this project is to provide a framework for effeciently representing large datasets of discrete shape graphs with arbitrary numbers of vertices and parameterization.</p>
+	<div class="col-md-8" markdown="1" align="left">
+		<p><br> Our goal is to compare shape graphs without having to solve the graph matching problem as described in [2,3] or the relaxed graph matching problem described in [1]. <br><br> We seek to train a geometric deep learning framework to map shape graphs to  parameterization invariant feature vector representations.<br><br></p>
+		<p><br> To do this we utilize varifold representations of shape graphs. We approximate the varifold associated with $\mathcal{C}=(V,E)$ by\[\mu = \sum_{e_i\in E}l_i\delta_{c_i,u_i} \in \mathcal{M}(\R^3\times S^2) \] where $c_i, u_i, l_i$ denote the centroid, normalized tangent vector, and length of $e_i$. <br><br>  Given shape graphs $\mathcal{C}_1$ and $\mathcal{C}_2$ and associated varifolds $\mu_1,\mu_2$, we denote $d_{Var}(\mathcal{C}_1,\mathcal{C}_2)=\|\mu_1-\mu_2\|_V$ </p>
+	</div>
+	<div class="col-md-4" markdown="1" align="center">
+	<div class="r-stack">
+		<span class="fragment current-visible"></span>
+		<span class="fragment current-visible"><img src="figs/InvarianceExplainer.png" width="100%"/></span>
+		<span class="fragment current-visible"><img src="figs/InvariantFVS.png" width="100%"/></span>
+	</div></div>
+	</div>
+	<hr>
+	<p><sub>[1] Sukurdeep et al. "A new variational model for shape graph registration with partial matching constraints"<br>[2] Guo et al. "Statistical shape analysis of brain arterial networks (BAN)"<br>[3] Bal et al. "Statistical Shape Analysis of Shape Graphs with Applications to Retinal Blood-Vessel Networks"</sub></p>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Downstream Learning Tasks</h4><hr>
+	<div class="row">
+	<div class="col-md-12" markdown="1" align="left">
+		<p>We will evaluate the feature vector frameworks based on two downstream tasks for unregistered data. We would like to: </p><br>
+		<p class="fragment fade-left">+ classify unregistered data where labels depend on the shape of an object.</p> <br>
+		<p class="fragment fade-left">+ produce reconstructions of discrete shape graphs with a fixed point to point correspondence.</p> <br>
+		<div class="r-stack" markdown="1" align="left">
+		<span class="fragment current-visible"><img src="figs/DownStream.png" width="100%"/></span>
+		</div>
+	</div>
+	</div>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Datasets</h4><hr>
+	<div class="row" align="left">
+		<p>We first consider numerical results on four datasets of 3-dimensional curves/shape graphs.</p>
+		<div class="col-md-6" markdown="1" align="left">
+		<p>We extract this geometric data from surface meshes from the COMA (faces), DFAUST, and FAUST (human bodies) datasets. <br><br>
+		The COMA and DFAUST datasets contain scans of 12 identities present in each dataset. We include these as labels to train the classifier network.<br><br>
+		The FAUST data set contains significatly fewer meshes, so we use this data extracted from this set to test the generalizability of models trained on DFAUST.<br><br>
+		Finally, we consider a set of 100 resamplings of random shape graphs from the DFAUST testing data to test the reparameterization invariance of each model trained on DFAUST.
+		</p>
+		</div>
+		<div class="col-md-6" markdown="1" align="left">
+		<img src="figs/extraction.png" width="100%"/><br>
+		<p></p>
+		</div>
+		<img src="figs/datasets.png" width="100%"/>
+	</div>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Existing Approaches</h4><hr>
+	<div class="row">
+		<div class="col-md-6" markdown="1" align="left"><p>Existing approaches for parameterization invariant representations of geometric data treat the data as point clouds.</p>
+		<p>We will discuss briefly PointNet [1] and Dynamic Graph Convolutional Nueral Networks [2] (DGCNN).<br><br></p>
+		<p> These methods both approach finding parameterization invariant representations by:<br><br></p>
+		<p class="fragment fade-left"> &emsp;+learning a non-linear map that takes the vertices into a high dimensional space.<br><br></p>
+		<p class="fragment fade-left"> &emsp;+applying a symmetric function to the mapped vertices to obtain a representation of the total object.<br><br></p>
+		<p class="fragment fade-left"> Notably, DGCNN utilizizes the k-nearest neighbors of each vertex as the input to the learned map.</p>
+		</div>
+		<div class="col-md-6" markdown="1" align="left">
+			<img src="figs/PointNet_Overview.png" width="100%"/><hr><img src="figs/DGCNN_Overview.png" width="100%"/><img src="figs/EdgeConv.png" width="80%"/>
+		</div>
+	</div>
+	<hr>
+	<p><sub>[1] Qi et al. "PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation"<br>
+	[2] Wang et al. "Dynamic Graph CNN for Learning on Point Clouds"</sub></p>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">Varifold Gradient for Feature Vector Representations [1]</h4><hr>
+	<div class="row">
+	<div class="col-md-8" markdown="1" align="left">
+		<p>We consider a data driven approach where we utilize a template object, $\mathcal{T}$, as a representative of the given dataset. <br><br></p>
+		<p>These representatives can be carefully contstucted (i.e. the mean of the dataset), but for the examples we show to today we take a random element of the training dataset.</p>
+	</div>
+	<div class="col-md-4" markdown="1" align="left">
+		<img src="figs/templates1.png" width="44%"/><img src="figs/templates2.png" width="22%"/><br>
+	</div>
+	<div class="col-md-6" markdown="1" align="left">
+		<p class="fragment fade-left">Our feature vector architecture represents input data by:</p><br>
+		<p class="fragment fade-left">+ Computing the gradient of the varifold distance between $\mathcal{T}$ and the input data $\mathcal{C}$ with respect to the vertices of $\mathcal{T}$. <br><br></p>
+		<p class="fragment fade-left">+ This produces 3-dimensional vector field on the vertices of $\mathcal{T}$. <br></p>
+		<p class="fragment fade-left">+ We pass the vector field through a series of edge convolutions and edge pooling layers with respect to the edges of $\mathcal{T}$. <br></p></div>
+	<div class="col-md-6" markdown="1" align="center">
+		<p><img src="figs/overview.png" width="100%"/></p></div>
+	</div>
+	<p><sub>[1] <b>H.</b> and Pierson. "VariGrad: A Novel Feature Vector Architecture for Geometric Deep Learning on Unregistered Data"</sub></p>
+	</textarea>
+	</section>
+
+	<section data-markdown>
+	<textarea data-template>
+	<h4 align="left">VariGrad Results</h4><hr>
+	<div class="row">
+		<div class="col-md-8" markdown="1" align="left">
+			<span><img src="figs/VariGradResults.png" width="75%"/></span><br><br>
+			<div class="col-md-5" markdown="1" align="left">
+			<img src="figs/VariGradReconstruction.png" width="85%"/>
+			</div>
+			<div class="col-md-7" markdown="1" align="left"><br><span class="fragment fade-left"><img src="figs/VariGradResults2.png" width="100%"/><br><br><img src="figs/invariance.png" width="100%"/></span>
+		</div>
+		</div>
+		<div class="col-md-4" markdown="1" align="center">
+		<span class="fragment fade-left">
+		<p>Once we have parameterization invariant representations of a population of geometric data we can analyze shape variability of the dataset.  </p><img src="figs/srv_interp.gif" width="60%"/><br><img src="figs/SRVmean.png" width="50%"/></span>
+		</div>
+	</div>
+	</textarea>
+	</section>
+	<!-- Conclusion and Future Work -->
+
+	<section data-markdown>
+		<textarea data-template>
+		<h4 align="left">Future Directions</h4><hr>
+		<div class="row">
+		<div class="col-md-4" markdown="1" align="left">
+		<p>Edge Classifier Networks for Learning Edge Functions and Weights:</p>
+		<div class="r-stack">
+		<span><img src="figs/MissingParts0.png" width="100%"/></span>
+		<span class="fragment current-visible"><img src="figs/MissingParts1.png" width="100%"/></span>
+		<span class="fragment current-visible"><img src="figs/MissingParts2.png" width="100%"/></span>
+		</div>
+		</div>
+		<div class="col-md-8" markdown="1" align="left">
+			<p>Varifold Gradiants for Parameterization Invariant Representations of Surfaces:</p>
+			<span class="fragment fade-left"><img src="figs/reg_work.png" width="55%"/></span>
+			<span class="fragment fade-left"><img src="figs/varigrad_real_scan.png" width="55%"/></span>
+		</div>
+		</div>
+		</textarea>
+		</section>
+		<section data-markdown>
+		<textarea data-template>
+		<h4 align="left">Acknowledgments</h4><hr>
+		<div class="row">
+		<div class="col-md-6" markdown="1" align="left">
+			<p>I would like to thank:</p>
+			<div class="col-md-12" markdown="1" align="left">
+				<p>Martin Bauer and Eric Klassen for their invaluable advice throughout my doctoral studies,<br><br></p>
+				<p>Dr. Needham, Dr. Asllani, and Dr. Srivastava for serving on my committee and offering feedback on my research over the last few years,<br><br></p>
+				<p>my collaborators Nicolas Charon, Yashil Sukurdeep, Mohamed Daoudi, Emery Pierson, Dylan Connell, Sam Vecchio, and Sophie Allen<br><br></p>
+				<p>my friends for their support and the wonderful memories we have made together while I've been in Tallahassee, <br><br></p>
+			</div>
+		</div>
+		<div class="col-md-6" markdown="1" align="center">
+			<span class="fragment fade-left"><p>..and of course Carly and Titan.</p>
+			<img src="figs/titan.gif" width="100%"/></span>
+		</div>
+		</div>
+		</textarea>
+		</section>
+
+		<section data-markdown>
+		<textarea data-template>
+		<div class="row">
+		<div class="col-md-12" markdown="1" align="left">
+			<p>My dissertation is adapted from the following publications, preprints, and works in progress</p>
+			<div class="col-md-12" markdown="1" align="left">
+				<sub>[1] Emmanuel Hartman, Yashil Sukurdeep, Nicolas Charon, Eric Klassen, and Martin Bauer. Supervised Deep Learning of Elastic SRV distances on the shape space of curves. In <em>Proceedings of the IEEE/CVF conference on Computer Vision and Pattern Recognition</em>, (2021).<br></sub>
+				<sub>[2] Martin Bauer, Emmanuel Hartman, and Eric Klassen. The Square Root Normal Field Distance and Unbalanced Optimal Transport,  <em>Applied Math & Optimization</em>, (2022).<br></sub>
+				<sub>[3] Emmanuel Hartman, Martin Bauer, and Eric Klassen. Square Root Normal Fields for Lipschitz Surfaces and the Wasserstein Fisher Rao Metric. <em>SIAM Mathematical Analysis</em>, (Forthcoming).<br></sub>
+				<sub>[4] Emmanuel Hartman, Yashil Sukurdeep, Eric Klassen, Nicolas Charon, and Martin Bauer. Elastic Shape Analysis of Surfaces with Second-order Sobolev metrics: a comprehensive numerical framework. <em>International Journal of Computer Vision</em>, (2023).<br></sub>
+				<sub>[5] Emmanuel Hartman, Emery Pierson, Martin Bauer, Nicolas Charon, and Mohamed Daoudi. BaRe-ESA: A Riemannian framework for unregistered human body shapes. In <em>Proceedings of the IEEE/CVF International Conference on Computer Vision</em>, (2023).<br></sub>
+				<sub>[6] Emmanuel Hartman, Emery Pierson, Martin Bauer, Mohamed Daoudi, and Nicolas Charon. Basis Restricted Elastic Shape Analysis on the space of Unregistered Surfaces, <em>Preprint</em>, (2023).<br></sub>
+				<sub>[7] Emmanuel Hartman and Emery Pierson. VariGrad: A Novel Feature Vector Architecture for Geometric Deep Learning on Unregistered Data. In <em>Eurographics Workshop on 3D Object Retrieval</em>, (2023).<br></sub>
+				<sub>[8] Emmanuel Hartman, Nicolas Charon, and Martin Bauer. Self Supervised Networks for Learning SMPL Representations of Human Body Scans and Motions (In Progess).<br><br></sub>
+			</div>
+		</div>
+		</div>
+		</textarea>
+		</section>
+
+
+
+<script src="../../revealjs/dist/reveal.js"></script>
+<script src="../../revealjs/plugin/zoom/zoom.js"></script>
+<script src="../../revealjs/plugin/notes/notes.js"></script>
+<script src="../../revealjs/plugin/search/search.js"></script>
+<script src="../../revealjs/plugin/markdown/markdown.js"></script>
+<script src="../../revealjs/plugin/highlight/highlight.js"></script>
+<script src="../../revealjs/plugin/math/math.js"></script>
+<script>
+
+Reveal.initialize({
+	controls: true,
+	progress: true,
+	center: true,
+	hash: true,
+	width: 1280,
+	height: 720,
+	progress: false,
+
+	plugins: [RevealMath.MathJax2,RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+});
+
+</script>
+
+</body>
+</html>
