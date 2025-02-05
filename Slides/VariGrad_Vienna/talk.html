@@ -79,9 +79,10 @@
 				</p>
 				<div class="row">
 					<div class="col-md-6" align="left" markdown="1">
+						<img src="figs/nsf.png" width="20%" />
 					</div>
 					<div class="col-md-6" align="right" markdown="1">
-					<img src="figs/nsf.png" width="20%" />
+						<img src="figs/esi_logo.png" width="60%" />
 				</div>
 				</div>
 </textarea>
@@ -94,12 +95,20 @@
 		<div class="col-md-7" align="left" markdown="1">
 		<p>Consider a space of parameterized objects $\Imm$ acted on by a group of reparameterizations $\Diff$. The goal of <b>shape learning</b> is to approximate a function $f:\Imm \to \mathcal{Y}$ such that $f$ is <b>invariant</b> to the action of $\Diff$. i.e. $$\text{if  } \exists \gamma\in\Diff \text{ s.t. } q_1 = q_2 \circ \gamma, \quad f(q_1)=f(q_2).$$</p>
 		<p>One goal of shape learning is to ensure our approximation of $f$ maintains the desired invariance property.</p>
-		<hr>
+		</div>
+		<div class="col-md-5" align="center" markdown="1">
+			<img src="figs/tikz1.png" width="80%"/>
+		</div>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-md-7" align="left" markdown="1">
 		<p>Classification: $\mathcal{Y} = \R^C$</p><br>
 		<img src="figs/humanbodies.png" width="55%"/>
 		<img src="figs/leaves.png" width="35%"/>
 		</div>
 		<div class="col-md-5" align="left" markdown="1">
+			<p>Reconstruction: $\mathcal{Y} = \mathcal{I}$</p>
 		</div>
 	</div>
 	</textarea>
@@ -110,7 +119,19 @@
 	<h4 align="left">Parameterization Invariant Latent Space Representations</h4><hr>
 	<div class="row">
 		<div class="col-md-8" align="left" markdown="1">
-		<p>We utilize a parameterization invariant latent space representation, $E:\Imm\to \mathcal{L} = \R^m$ so that $E$ is invariant to the action of $\Diff$.<br><br>Then to approximate $f$, we must learn a function $g:\mathcal{L}\to \mathcal{Y}$ such that $$g\circ E \approx f.$$</p>
+		<p>We utilize a parameterization invariant latent space representation, $E:\Imm\to \mathcal{L} = \R^m$ so that $E$ is invariant to the action of $\Diff$.
+		<br><br>For a well chosen (or learned) representation we can learn a function $g:\mathcal{L}\to \mathcal{Y}$ such that $$g\circ E \approx f.$$</p>
+		<p>Other than ensuring parameterization invariance, why decompose the problem in this way?</p>
+		<div class="col-md-1" align="left" markdown="1"></div>
+		<div class="col-md-11" align="left" markdown="1">
+		<p class="fragment fade-left">+ $E$ can be designed to not depend on the dimensionality of the discetization of data from $\Imm$</p>
+		<p class="fragment fade-left">+ $\mathcal{L}$ is typically of lower dimension than the input data</p>
+		<p class="fragment fade-left">+ learning $g$ is "easier" than learning $f$ directly</p>
+		<p class="fragment fade-left">+ improved generalizability compared to learning $f$ diectly</p>
+		</div>
+		</div>
+		<div class="col-md-4" align="left" markdown="1">
+			<img src="figs/tikz2.png" width="100%"/>
 		</div>
 	</div>
 	</textarea>
@@ -136,9 +157,9 @@
 <section data-markdown>
 	<textarea data-template>
 	<h4 align="left">Pitfalls for Using These Approaches on Continuous Data</h4><hr>
-		<div class="row"><p>For the remainder of the talk, we will consider continuous 3D data such as curves, surfaces, or shape graphs.<br> In this context, we fix a template manifold $M$ and consider parameterized objects as $\Imm = \operatorname{Imm}(M,\R^3)$ and the group of reparameterizations as $\Diff= \operatorname{Diff}(M)$.</p><br><br>
+		<div class="row"><p>For the remainder of the talk, we will consider surface data.<br> In this context, we fix a template 2-manifold $M$ and consider parameterized objects as $\Imm = \operatorname{Imm}(M,\R^3)$ and the group of reparameterizations as $\Diff= \operatorname{Diff}(M)$.</p><br><br>
 		<div class="col-md-9" align="left" markdown="1"><br>
-			<p class="fragment fade-left">+ These frameworks ignore the connectivity of graph and mesh data and learn based exclusively on the vertices.<br><br></p><br>
+			<p class="fragment fade-left">+ These frameworks ignore the connectivity triangular mesh discretizations of surface data and learn based exclusively on the vertices.<br><br></p><br>
 		<p class="fragment fade-left">+ The feature vector architectures discussed previously are designed to be invariant to the action of $S_n$ on a point cloud and are NOT invariant to the action of $\operatorname{Diff}(M)$.<br></p>
 		</div>
 		<div class="col-md-3" markdown="1"><img src="figs/MeshVerts.png" width="60%"/>
@@ -154,7 +175,7 @@
 		<h4 align="left">Parameterization Invariant Representations from Geometric Measure Theory$^{1,2,3,4}$</h4><hr>
 		<div class="row">
 		<div class="col-md-8" markdown="1" align="left">
-		<p>For any $q\in \Imm$ we can associate a varifold $\mu_q\in\mathcal{M}(\mathbb R^3\times S^{2})$ as the push forward measure $\mu_q:= (q,n_q)_*\operatorname{vol}_q$ where $n_q$ is the unit normal map (or unit tangent map) of $q$. In particular, for any $\gamma\in\Diff$, $\mu_{q\circ\gamma} = \mu_q$.</p><br>
+		<p>For any $q\in \Imm$ we can associate a varifold $\mu_q\in\mathcal{M}(\mathbb R^3\times S^{2})$ as the push forward measure $\mu_q:= (q,n_q)_*\operatorname{vol}_q$ where $n_q$ is the unit normal map of $q$. In particular, for any $\gamma\in\Diff$, $\mu_{q\circ\gamma} = \mu_q$.</p><br>
 		<p class="fragment" data-fragment-index="1"><br>Unfortunately, to represent the varifold associated with an objects with a fixed finite dimension requires solving a quantization problem.</p><br>
 		<p class="fragment" data-fragment-index="2">
 		<br>To avoid this problem, we will first need a distance function on the space of varifolds. We will equip $\mathcal{M}(\mathbb R^3\times S^{2})$ with the an RKHS norm $\|\cdot\|_{V}$ where for $\mu_{q}$ and $\mu_{p}$ the scalar product can be written as: \begin{equation*}\label{equ:norm_var}
@@ -173,76 +194,21 @@
 <section data-markdown>
 <textarea data-template>
 <h4 align="left">Varifold Gradient For Representing Shapes</h4><hr>
-<div class="row"><p> We propose a data driven method for parameterization invariant representations of shapes with fixed dimension.</p>
-<p> We fix a template object $\mathcal{T}\in\Imm$, and compute the gradient of the varifold distance between $\mathcal{T}$ and the input data $q$ with respect to the vertices of $\mathcal{T}$. <br><br></p>
+<div class="row" align = "left">
+	<p> To construct parameterization invariant representations of shapes with fixed dimension we consider the following setup. Consider a template $\mathcal{T}\in \Imm$ discretized by a triangular mesh with $M$ vertices and define the following operator: </p>
+<div class="col-md-12" markdown="1" align="center">
+	<p>$$\begin{align}\operatorname{VariGrad}:\Imm&\to\R^{3M}\\
+	q&\mapsto \nabla_{\vec{0}}\|\mu_q - \mu_{\mathcal{T} + (\cdot)}\|_V^2 = C - 2 \nabla_{\vec{0}}\langle\mu_q , \mu_{\mathcal{T}(\cdot)}\rangle.\end{align}$$<br></p>
+	<div>
 <div class="col-md-6" markdown="1" align="left">
-	<p class="fragment fade-left">+ $\operatorname{VariGrad}(q)$ is a vector field on $\mathcal{T}$ and thus has fixed dimension $3M$ independent of the dimensionality of $q$. <br><br></p>
+	<p class="fragment fade-left">+ $\operatorname{VariGrad}(q)$ is a vector field on $\mathcal{T}$ and thus has fixed dimension $3M$ independent of the dimensionality of our mesh represeentation of $q$. <br><br></p>
 	<p class="fragment fade-left">+ Intuitively, this gives a first order approximation of how to deform $\mathcal{T}$ into the same shape as $q$. <br><br></p>
 	<p class="fragment fade-left">+ Due to the properties of varifolds, it is parameterization blind and robust to imaging noise. <br><br></p>
 </div>
-<div class="col-md-6" markdown="1" align="center"><img src="figs/VariGradDef.png" width="100%"/><img src="figs/VarigradVisualization.png" width="100%"/></div>
+<div class="col-md-6" markdown="1" align="center"><br><img src="figs/VarigradVisualization.png" width="100%"/></div>
 </div>
 </textarea>
 </section>
-
-<section data-markdown>
-<textarea data-template>
-<h4 align="left">Datasets</h4><hr>
-<div class="row" align="left">
-	<p>We first consider numerical results on four datasets of 3-dimensional curves/shape graphs.</p>
-	<div class="col-md-6" markdown="1" align="left">
-	<p>We extract this geometric data from surface meshes from the COMA (faces), DFAUST, and FAUST (human bodies) datasets. <br><br>
-	The COMA and DFAUST datasets contain scans of 12 identities present in each dataset. We include these as labels to train the classifier network.<br><br>
-	The FAUST data set contains significatly fewer meshes, so we use this data extracted from this set to test the generalizability of models trained on DFAUST.<br><br>
-	Finally, we consider a set of 100 resamplings of random shape graphs from the DFAUST testing data to test the reparameterization invariance of each model trained on DFAUST.
-	</p>
-	</div>
-	<div class="col-md-6" markdown="1" align="left">
-	<img src="figs/extraction.png" width="100%"/><br>
-	<p></p>
-	</div>
-	<img src="figs/datasets.png" width="100%"/>
-</div>
-</textarea>
-</section>
-
-<section data-markdown>
-<textarea data-template>
-<h4 align="left">Downstream Learning Tasks</h4><hr>
-<div class="row">
-<div class="col-md-12" markdown="1" align="left">
-	<p>We evaluate the feature vector architectures based on two downstream tasks for unregistered data. We would like to: </p><br>
-	<p class="fragment fade-left">+ classify unregistered data where labels depend on the shape of an object.</p> <br>
-	<p class="fragment fade-left">+ produce reconstructions of discrete shape graphs with a fixed point to point correspondence.</p> <br>
-	<div class="r-stack" markdown="1" align="left">
-	<span class="fragment current-visible"><img src="figs/DownStream.png" width="100%"/></span>
-	</div>
-</div>
-</div>
-</textarea>
-</section>
-
-<section data-markdown>
-<textarea data-template>
-<h4 align="left">VariGrad Results</h4><hr>
-<div class="row">
-<div class="col-md-8" markdown="1" align="left"><img src="figs/VariGradResults.png" height="80%"/></div>
-<div class="col-md-4" markdown="1" align="center"><img src="figs/VariGradReconstruction.png" height="80%"/></div>
-</div>
-</textarea>
-</section>
-
-
-<section data-markdown>
-<textarea data-template>
-<h4 align="left">VariGrad Results Continued</h4><hr>
-<div class="row">
-<div class="col-md-5" markdown="1" align="left"><img src="figs/VariGradResults2.png" height="80%"/></div>
-<div class="col-md-7" markdown="1" align="center"><span class="fragment fade-left"><img src="figs/invariance.png" width="100%"/></span></div>
-</div>
-</textarea>
-</section>
-
 
 <section data-markdown>
 <textarea data-template>
@@ -334,22 +300,22 @@
 <section data-markdown>
 	<textarea data-template>
 		<h4 align="left">Conclusion + Future Directions</h4><hr>
-		<p align="left">We propose two models based on varifold gradients to compute parameterization invariant feature vector representations of continuous shape data such as shape graphs, curves and surfaces.<br><br>
+		<p align="left"> We discuss notions of parameterization invariant representations of objects for shape learning. In the case of surfaces we propose using the gradient of the varifold distance as parameterization invariant feature representations of this data.   <br><br>
 		</p><div class="row">
 		<div class="col-md-8" markdown="1" align="left">
-			<p class="fragment fade-left"> + These models produce results that are both theoretically and empirically parameterization blind.</p>
-			<p class="fragment fade-left"> + These models require less trainable parameters than existing models for point cloud data.<br><br></p>
-			<p class="fragment fade-left"> - Develop theoretical properties of the varifold gradient operator. </p>
-			<p class="fragment fade-left"> - Do we need deep learning? What can we accomplish with the varifold gradient operator directly while obtaining more explainable results? </p>
+			<p class="fragment fade-left"> + We demonstrate the strength of this method in several deep learning applications.</p>
+			<p class="fragment fade-left"> + Moreover, we show the sucess of these features for classic learning methods and discuss the interpretability of these results.</p>
+			<p class="fragment fade-left"> - Show the sensitivity of the VariGrad representation with respect to the choice of template object.</p>
+			<p class="fragment fade-left"> - Characterize the kernel of the varigrad operator to see what shapes the varigrad operator cannot distinguish.</p>
 			<hr>
 			<p><sub>
 				This talk is based on:<br><a href="https://diglib.eg.org/handle/10.2312/3dor20231150">https://diglib.eg.org/handle/10.2312/3dor20231150</a><br>
 				<a href="https://arxiv.org/pdf/2411.03475">https://arxiv.org/pdf/2411.03475</a><br>
-				The code for a Pytorch implementation VariGrad model for shape graphs is available at:<br> <a href="https://github.com/emmanuel-hartman/Pytorch_VariGrad">https://github.com/emmanuel-hartman/Pytorch_VariGrad</a><br>
+				A Pytorch implementation VariGrad model for shape graphs is available at:<br> <a href="https://github.com/emmanuel-hartman/Pytorch_VariGrad">https://github.com/emmanuel-hartman/Pytorch_VariGrad</a><br>
+				The slides for this talk are available at: <a href="https://emmanuel-hartman.github.io/Talks/Slides/VariGrad_Vienna/talk.html">https://emmanuel-hartman.github.io/Talks/Slides/VariGrad_Vienna/talk.html.</a>
 		</sub></p>
 		</div>
 		<div class="col-md-4" markdown="1" align="center">
-		<img src="figs/HeartClusterMeans.png" width="80%" />
 		<br><br>
 		<center><p class="fragment fade-left">Thank you to the organizers for inviting me to speak and thank you for your attention!</p></center>
 	</textarea>
