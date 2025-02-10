@@ -96,8 +96,8 @@
 	<h4 align="left">Shape Learning</h4><hr>
 	<div class="row" align="left">
 		<div class="col-md-8" align="left" markdown="1">
-		<p>Consider the space of parameterized surfaces $\Imm = \operatorname{Imm}(M,\R^3)$ acted on by a group of reparameterizations $\Diff=\operatorname{Diff}(M)$.
-			<br><br>The goal of shape learning is to approximate a function $f:\Imm \to \mathcal{Y}$ which is <b>invariant</b> to the action of $\Diff$. i.e. $$\text{for any  } q\in\Imm \text{ and } \gamma\in\Diff, \quad f(q)=f(q\circ\gamma).$$</p>
+		<p>Consider the space of parameterized objects $\Imm$ acted on by a group of reparameterizations $\Diff$.
+			<br>The goal of shape learning is to approximate a function $f:\Imm \to \mathcal{Y}$ which is <b>invariant</b> to the action of $\Diff$. i.e. $$\text{for any  } q\in\Imm \text{ and } \gamma\in\Diff, \quad f(q)=f(q\circ\gamma).$$</p>
 			<p class="fragment fade-left">How can we ensure our approximation of $f$ is parametrization invariant?<br></p><br>
 			<p class="fragment fade-left">How can we represent data with a fixed dimension? Especially as triangular mesh representations of surfaces have differing simplicial structures and numbers of vertices.</p>
 		</div>
@@ -109,7 +109,6 @@
 	</textarea>
 </section>
 
-<!--
 <section data-markdown>
 	<textarea data-template>
 	<h4 align="left">Parameterization Invariant Latent Space Representations</h4><hr>
@@ -117,23 +116,26 @@
 		<div class="col-md-8" align="left" markdown="1">
 		<p>In this talk we will consider the approach of parameterization invariant latent space representations. In this approach, we construct $E:\Imm\to \mathcal{L} = \R^m$ so that $E$ is invariant to the action of $\Diff$.
 		<br>For a well constructed representation we can learn a function $g:\mathcal{L}\to \mathcal{Y}$ such that $$g\circ E \approx f.$$</p>
-		<p>Why decompose the problem in this way?</p>
+		<p class="fragment fade-left">Why decompose the problem in this way?</p>
 		<div class="col-md-1" align="left" markdown="1"></div>
 		<div class="col-md-11" align="left" markdown="1">
 		<p class="fragment fade-left">+ $g\circ E$ is invariant to the action of $\mathcal{D}$</p>
 		<p class="fragment fade-left">+ $E$ can be designed to not depend on the dimensionality of the discetization of data from $\Imm$</p>
 		</div>
 		</div>
-		<div class="col-md-4" align="left" markdown="1">
-			<img src="figs/tikz2.png" width="100%"/>
-		</div>
+		<div class="col-md-4" markdown="1" align="center">
+		<div class="r-stack">
+			<span class="fragment current-visible"></span>
+			<span class="fragment current-visible"><img src="figs/InvarianceExplainer.png" width="100%"/></span>
+			<span class="fragment current-visible"><img src="figs/InvariantFVS.png" width="100%"/></span>
+		</div></div>
 	</div>
 	</textarea>
 </section>
 
 <section data-markdown>
 	<textarea data-template>
-	<h4 align="left">PointNet[1] and similar methods for point clouds</h4><hr>
+	<h4 align="left">PointNet[1] and similar methods[2,3,...] for point clouds</h4><hr>
 	<div class="row">
 		<p>In the context of 3D pointclouds, we consider $\Imm = \{q:\{1,2,..,n\} \to \R^3\}$ and the group of reparameterizations $\Diff = S_n$ is the symmetric group on $n$ elements.</p><br><br>
 		<div class="col-md-7" align="left" markdown="1">
@@ -143,7 +145,9 @@
 		<div class="col-md-5" align="left" markdown="1">
 			<img src="figs/PointNet_Overview.png" width="100%"/>
 		</div>
-		<p align="left"><sub>$^1$ Qi et. al. "PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation."</sub><br>
+		<p align="left"><sub>$^1$ Qi et. al. "PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation."</sub>
+		<p align="left"><sub>$^2$ Wang et. al. "Dynamic Graph CNN for Learning on Point Clouds"</sub>
+		<p align="left"><sub>$^3$ Guerrero et. al. "PCPNET: Learning Local Shape Properties from Raw Point Clouds"</sub>
 	</div>
 	</textarea>
 </section>
@@ -161,12 +165,13 @@
 		</div>
 		<div class="col-md-3" markdown="1"><img src="figs/MeshVerts.png" width="60%"/>
 		</div>
-		<p class="fragment fade-left">Despite this, several frameworks (i.e. 3DCoded$^1$) exist using these methods on point cloud discretizations of continuous data.<br></p>
+		<div class="col-md-9" align="left" markdown="1">
+		<p class="fragment fade-left">Despite this, state-of-the-art frameworks (i.e. 3DCoded$^1$) exist using this approach for continuous data.<br></p>
 		</div>
+	  </div>
 		<p align="left"><sub>$^1$Groueix, et al. "3D-CODED : 3D Correspondences by Deep Deformation."</sub><br>
 	</textarea>
 </section>
--->
 
 <section data-markdown>
 	<textarea data-template>
@@ -205,6 +210,25 @@
 </div>
 <div class="col-md-6" markdown="1" align="center"><br><img src="figs/VarigradVisualization.png" width="100%"/></div>
 </div>
+</textarea>
+</section>
+
+<section data-markdown>
+<textarea data-template>
+<h4 align="left">VariGrad for Surface Reconstruction</h4><hr>
+<div class="row">
+<div class="col-md-12" markdown="1" align="left">
+	<p>Consider $\Imm_F \subset \Imm$ as the space of all surfaces of a specific modality which can be represented by a mesh with a fixed mesh structure $F$. Our goal will be to learn $f:\Imm \to \Imm_F$ such that $f(q)$ is the same shape as $q$.</p><br><br>
+</div>
+<div class="col-md-8" markdown="1" align="left">
+	<p>We attempt to learn such a function the DFAUST[1] dataset which consists of ~40,000 scans. This dataset includes mesh representations of each of the scans with a fixed mesh structure $F$.</p><br><br>
+	<p>We train the models with ~80% of the registered DFAUST to minimize the mean square error of the vertex error.</p>
+</div>
+<div class="col-md-4" markdown="1" align="left">
+	<img src="figs/VariGrad_AutoEncode.png" width="100%"/>
+</div>
+</div>
+<p align="left"><sub>$^{1}$ Bogo, et al. "Dynamic FAUST: Registering Human Bodies in Motion"</sub><br>
 </textarea>
 </section>
 
